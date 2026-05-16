@@ -1,0 +1,88 @@
+Premier League Performance Intelligence Platform
+
+A cloud-hosted football analytics platform that continuously ingests live Premier League standings, 
+fixtures, schedules, and match results from external football APIs. Python-based fetcher services 
+periodically request updated data from the API, store the raw JSON responses locally/AWS S3, and 
+transform the nested API responses into structured relational tables inside PostgreSQL.
+
+The platform is designed as a complete ETL (Extract, Transform, Load) pipeline:
+- Extract: Fetch live football data from external APIs
+- Transform: Clean and normalize deeply nested JSON responses into structured team, fixture, and 
+standings data
+- Load: Store the processed data in PostgreSQL for querying and analytics
+
+Rather than simply displaying league tables, the platform generates derived analytics and 
+performance insights from the raw data.
+
+Analytics Features:
+
+1. Team Form & Momentum Tracking
+The system analyzes recent fixtures to compute rolling form metrics such as points gained in the 
+last 5 matches, recent win/draw/loss streaks, and momentum shifts over time.
+
+2. Home vs Away Performance Analysis
+Fixture and standings data are separated into home and away records to identify teams that heavily 
+rely on home advantage versus teams that consistently perform away from home.
+
+3. Top-Half vs Bottom-Half Performance
+The platform compares team performance against stronger and weaker opposition by calculating goals 
+scored, goals conceded, and points earned against top-half and bottom-half teams separately.
+
+4. Schedule Difficulty Metrics
+Remaining fixtures are analyzed against current league standings to estimate future schedule 
+difficulty based on the average ranking of upcoming opponents.
+
+5. Attack & Defensive Efficiency Metrics
+The system calculates goals scored per game, goals conceded per game, and goal difference 
+efficiency to rank teams based on offensive and defensive strength.
+
+6. Position Movement Tracking
+Daily standings snapshots are stored in the database, allowing the platform to monitor changes in 
+league position, identify rising/falling teams, and visualize progression throughout the season.
+
+7. Historical Snapshot Storage
+Instead of overwriting standings data, the platform stores historical snapshots over time, enabling 
+trend analysis and time-series performance tracking.
+
+Backend Architecture:
+
+External Football API
+        ↓
+Python Fetcher Services
+        ↓
+Raw JSON Storage
+        ↓
+Data Cleaning & Feature Engineering
+        ↓
+PostgreSQL Analytics Database
+        ↓
+Flask REST API
+        ↓
+Analytics Endpoints / Dashboard
+
+Example API Endpoints:
+- /analytics/form
+- /analytics/schedule-difficulty
+- /analytics/home-away
+- /analytics/top-half-performance
+- /analytics/attack-defense
+- /analytics/momentum
+
+Infrastructure & Deployment:
+
+The platform is containerized using Docker and deployed on AWS EC2, while PostgreSQL runs on AWS 
+RDS. GitHub Actions automates CI/CD workflows by testing the codebase, building Docker images, 
+pushing updates to Docker Hub, and redeploying the application automatically after every push to 
+the main branch.
+
+Technologies Used:
+- Python
+- Flask
+- PostgreSQL
+- Docker
+- AWS EC2 & RDS
+- GitHub Actions
+- REST APIs
+- SQL
+- ETL Pipelines
+- Data Engineering Workflows
