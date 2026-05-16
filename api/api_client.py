@@ -10,8 +10,12 @@ headers  ={
     "X-Auth-Token": API_KEY
 }
 
-def make_request(url_add, file):
-    response = requests.get(URL + url_add, headers=headers)
+def make_request(url_add, file, params):
+    response = requests.get(
+        URL + url_add,
+        headers=headers,
+        params=params
+    )
     data = response.json()
 
     with open(file, "w") as f:
