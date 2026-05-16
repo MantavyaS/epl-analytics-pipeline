@@ -16,6 +16,8 @@ def make_request(url_add, file, params):
         headers=headers,
         params=params
     )
+    response.raise_for_status()
+    
     data = response.json()
 
     with open(file, "w") as f:
