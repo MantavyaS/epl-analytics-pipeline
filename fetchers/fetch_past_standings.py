@@ -9,5 +9,5 @@ for i in range(5):
         "season": 2025,
         "matchday": current_matchweek
     }
-    file = f"json_files/matchweek{current_matchweek}_standings.json"
+    file = f"raw_json_files/matchweek{current_matchweek}_standings.json"
     make_request(url, file, params)
