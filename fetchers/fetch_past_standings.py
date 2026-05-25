@@ -1,7 +1,7 @@
 from api.api_client import make_request
 
 url = "/competitions/2021/standings"
-first_matchweek = 32
+first_matchweek = 33
 for i in range(5):
     current_matchweek = first_matchweek + i
 
