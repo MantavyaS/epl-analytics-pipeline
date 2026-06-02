@@ -1,38 +1,31 @@
-import psycopg2
-import os
-from dotenv import load_dotenv
+from database.db import get_connection
 
-load_dotenv()
+def get_best_attack():
+    load_dotenv()
 
-conn = psycopg2.connect(
-    dbname=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    host=os.getenv("DB_HOST"),
-    port=os.getenv("DB_PORT")
-)
+    conn = get_connection()
+    cur = conn.cursor()
 
-cur = conn.cursor()
+    try:
+        cur.execute("""
+        SELECT
+            team_name,
+            played,
+            goals_for,
+            ROUND(goals_for::numeric / played, 2) AS goals_per_game
+        FROM rolling_standings
+        WHERE matchday = 38
+        ORDER BY goals_per_game DESC;
+        """)
 
-try:
-    cur.execute("""
-    SELECT
-        team_name,
-        played,
-        goals_for,
-        ROUND(goals_for::numeric / played, 2) AS goals_per_game
-    FROM rolling_standings
-    WHERE matchday = 38
-    ORDER BY goals_per_game DESC;
-    """)
+        results = cur.fetchall()
 
-    results = cur.fetchall()
+        return results
 
-    for row in results:
-        print(row)
-
-except Exception as e:
-    print("Error:", e)
-
-cur.close()
-conn.close()
+    except Exception as e:
+        print(f"Error: {e}")
+        return []
+    
+    finally:
+        cur.close()
+        conn.close()
