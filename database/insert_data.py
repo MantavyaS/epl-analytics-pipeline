@@ -106,6 +106,14 @@ for row in topscorers:
         row["assists"],
         row["penalties"]
     ))
+
+cur.execute("""
+SELECT matchday, COUNT(*)
+FROM rolling_standings
+GROUP BY matchday
+ORDER BY matchday;
+""")
+
 conn.commit()
 cur.close()
-conn.close
+conn.close()

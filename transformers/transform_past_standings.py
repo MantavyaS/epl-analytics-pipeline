@@ -10,7 +10,7 @@ for i in range(33, 38):
         raw = json.load(r)
     
     season = raw["filters"]["season"]
-    matchday = raw["season"]["currentMatchday"]
+    matchday = raw["filters"]["matchday"]
 
     table = raw["standings"][0]["table"]
     cleaned_rows = []
