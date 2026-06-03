@@ -1,8 +1,6 @@
 from database.db import get_connection
 
 def get_best_attack():
-    load_dotenv()
-
     conn = get_connection()
     cur = conn.cursor()
 
