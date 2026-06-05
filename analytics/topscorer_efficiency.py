@@ -20,7 +20,13 @@ def get_topscorer_efficiency():
         ORDER BY goal_contributions_per_game DESC;
         """)
 
-        results = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        rows = cur.fetchall()
+
+        results = []
+
+        for row in rows:
+            results.append(dict(zip(columns, row)))
 
         return results
 

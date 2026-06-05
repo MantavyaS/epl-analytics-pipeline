@@ -29,7 +29,13 @@ def get_points_gained():
         ORDER BY points_gained DESC
         """)
 
-        results = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        rows = cur.fetchall()
+
+        results = []
+
+        for row in rows:
+            results.append(dict(zip(columns, row)))
 
         return results
 

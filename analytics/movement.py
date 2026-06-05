@@ -35,7 +35,13 @@ def get_movement():
         ORDER BY position_gain DESC;
         """)
 
-        results = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        rows = cur.fetchall()
+
+        results = []
+
+        for row in rows:
+            results.append(dict(zip(columns, row)))
 
         return results
 
