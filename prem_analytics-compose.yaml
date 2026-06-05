@@ -1,0 +1,44 @@
+services:
+  postgres_container:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password 
+      - POSTGRES_DB=prem_analytics
+    volumes:
+      - prem_db_data:/var/lib/postgresql/data
+  
+  flask-api:
+    build: .
+    command: python run.py
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres_container
+  
+  etl:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - postgres_container
+    command: >
+      sh -c "
+      python -m fetchers.fetch_fixtures &&
+      python -m fetchers.fetch_past_standings &&
+      python -m fetchers.fetch_standings &&
+      python -m fetchers.fetch_topscorers &&
+
+      python -m transformers.transform_past_standings &&
+      python -m transformers.transform_standings &&
+      python -m transformers.transform_topscorers &&
+
+      python -m database.db &&
+      python -m database.insert_data
+      "
+volumes:
+  prem_db_data:
