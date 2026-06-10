@@ -13,18 +13,6 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
-variable "instance_type" {
-  description = "type of ec2 instance"
-  type        = string
-  default     = "t3.micro"
-}
-
-variable "instance_name" {
-  description = "name of the ec2 instance"
-  type        = string
-  default     = "prem_analytics_server"
-}
-
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -44,37 +32,6 @@ module "vpc" {
     Terraform   = "true"
     Environment = "dev"
     Owner       = "Mantavya"
-  }
-}
-
-resource "aws_instance" "prem_analytics_server" {
-  ami = data.aws_ami.ubuntu.id
-
-  instance_type = var.instance_type
-
-  vpc_security_group_ids = [
-    aws_security_group.prem_analytics_sg.id
-  ]
-
-  subnet_id = module.vpc.public_subnets[0]
-
-  associate_public_ip_address = true
-
-  key_name = aws_key_pair.prem_analytics.key_name
-
-  root_block_device {
-    volume_size           = 20
-    volume_type           = "gp3"
-    encrypted             = true
-    delete_on_termination = true
-  }
-
-  tags = {
-    Project     = "Prem_Analytics"
-    Environment = "dev"
-    Owner       = "Mantavya"
-    Terraform   = "true"
-    Name        = var.instance_name
   }
 }
 
@@ -124,10 +81,33 @@ resource "aws_security_group_rule" "all_egress" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-output "ec2_public_ip" {
-  value = aws_instance.prem_analytics_server.public_ip
-}
+resource "aws_instance" "prem_analytics_server" {
+  ami = data.aws_ami.ubuntu.id
 
-output "ssh_command" {
-  value = "ssh -i ~/.ssh/id_ed25519 ubuntu@${aws_instance.prem_analytics_server.public_ip}"
+  instance_type = var.instance_type
+
+  vpc_security_group_ids = [
+    aws_security_group.prem_analytics_sg.id
+  ]
+
+  subnet_id = module.vpc.public_subnets[0]
+
+  associate_public_ip_address = true
+
+  key_name = aws_key_pair.prem_analytics.key_name
+
+  root_block_device {
+    volume_size           = 20
+    volume_type           = "gp3"
+    encrypted             = true
+    delete_on_termination = true
+  }
+
+  tags = {
+    Project     = "Prem_Analytics"
+    Environment = "dev"
+    Owner       = "Mantavya"
+    Terraform   = "true"
+    Name        = var.instance_name
+  }
 }
