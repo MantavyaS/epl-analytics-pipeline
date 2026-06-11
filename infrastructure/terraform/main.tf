@@ -113,3 +113,79 @@ resource "aws_instance" "prem_analytics_server" {
     Name        = var.instance_name
   }
 }
+
+// RDS Instance
+
+resource "aws_db_subnet_group" "prem_analytics_db_subnet" {
+  name       = "prem_analytics_db_subnet"
+  subnet_ids = module.vpc.private_subnets
+
+  tags = {
+    Project     = "Prem_Analytics"
+    Terraform   = "true"
+    Environment = "dev"
+    Owner       = "Mantavya"
+  }
+}
+
+resource "aws_db_instance" "prem-analytics-db" {
+  identifier = "prem-analytics-db"
+
+  engine         = "postgres"
+  engine_version = "16"
+  instance_class = "db.t3.micro"
+
+  allocated_storage = 20
+  storage_type      = "gp3"
+  storage_encrypted = true
+
+  db_name  = "prem_analytics"
+  username = "premadmin"
+  password = var.db_password
+
+  db_subnet_group_name   = aws_db_subnet_group.prem_analytics_db_subnet.name
+  vpc_security_group_ids = [aws_security_group.prem_analytics_rds_sg.id]
+
+  publicly_accessible = false
+  skip_final_snapshot = true
+  deletion_protection = false
+
+  tags = {
+    Project     = "Prem_Analytics"
+    Terraform   = "true"
+    Environment = "dev"
+    Owner       = "Mantavya"
+  }
+}
+
+resource "aws_security_group" "prem_analytics_rds_sg" {
+  name        = "prem_analytics_rds_sg"
+  description = "Security group for the RDS database"
+
+  vpc_id = module.vpc.vpc_id
+
+  tags = {
+    Name        = "prem_analytics_rds_sg"
+    Project     = "Prem_Analytics"
+    Environment = "dev"
+    Owner       = "Mantavya"
+  }
+}
+
+resource "aws_security_group_rule" "rds_ingress_from_ec2" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.prem_analytics_rds_sg.id
+  source_security_group_id = aws_security_group.prem_analytics_sg.id
+}
+
+resource "aws_security_group_rule" "rds_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.prem_analytics_rds_sg.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}

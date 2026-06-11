@@ -9,3 +9,10 @@ variable "instance_name" {
   type        = string
   default     = "prem_analytics_server"
 }
+
+variable "db_password" {
+  description = "Password for the RDS PostgreSQL admin user"
+  type        = string
+  sensitive   = true
+  default     = "password"
+}

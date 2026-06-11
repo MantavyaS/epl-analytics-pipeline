@@ -27,4 +27,7 @@ usermod -aG docker ubuntu
 echo "Prem Analytics bootstrap completed successfully" > /var/log/prem-analytics-bootstrap.log
 
 cd /opt
-git pull https://github.com/MantavyaS/epl-analytics-pipeline.git
+sudo git clone https://github.com/MantavyaS/epl-analytics-pipeline.git
+sudo chown -R ubuntu:ubuntu epl-analytics-pipeline
+
+echo "Pulled github repo successfully" > /var/log/prem-analytics-bootstrap.log
