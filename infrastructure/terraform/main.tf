@@ -103,6 +103,8 @@ resource "aws_instance" "prem_analytics_server" {
     delete_on_termination = true
   }
 
+  user_data = file("${path.module}/scripts/bootstrap.sh")
+
   tags = {
     Project     = "Prem_Analytics"
     Environment = "dev"
