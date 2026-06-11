@@ -9,6 +9,7 @@ services:
       - POSTGRES_DB=prem_analytics
     volumes:
       - prem_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
   
   flask-api:
     build: .
@@ -19,6 +20,7 @@ services:
       - .env
     depends_on:
       - postgres_container
+    restart: unless-stopped
   
   etl:
     build: .
@@ -40,5 +42,6 @@ services:
       python -m database.db &&
       python -m database.insert_data
       "
+    restart: unless-stopped
 volumes:
   prem_db_data:
