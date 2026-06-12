@@ -1,0 +1,35 @@
+services:
+  flask-api:
+    build: .
+    command: python run.py
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres_container
+    restart: unless-stopped
+  
+  etl:
+    build: .
+    env_file:
+      - .env
+    depends_on:
+      - postgres_container
+    command: >
+      sh -c "
+      python -m fetchers.fetch_fixtures &&
+      python -m fetchers.fetch_past_standings &&
+      python -m fetchers.fetch_standings &&
+      python -m fetchers.fetch_topscorers &&
+
+      python -m transformers.transform_past_standings &&
+      python -m transformers.transform_standings &&
+      python -m transformers.transform_topscorers &&
+
+      python -m database.db &&
+      python -m database.insert_data
+      "
+    restart: unless-stopped
+volumes:
+  prem_db_data:
