@@ -6,16 +6,12 @@ services:
       - "5000:5000"
     env_file:
       - .env
-    depends_on:
-      - postgres_container
     restart: unless-stopped
   
   etl:
     build: .
     env_file:
       - .env
-    depends_on:
-      - postgres_container
     command: >
       sh -c "
       python -m fetchers.fetch_fixtures &&
