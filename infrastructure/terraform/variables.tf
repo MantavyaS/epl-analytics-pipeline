@@ -14,5 +14,10 @@ variable "db_password" {
   description = "Password for the RDS PostgreSQL admin user"
   type        = string
   sensitive   = true
-  default     = "password"
+}
+
+variable "football_api_key" {
+  description = "API Key for raw data"
+  type        = string
+  sensitive   = true
 }

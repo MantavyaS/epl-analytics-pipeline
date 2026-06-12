@@ -81,6 +81,8 @@ resource "aws_security_group_rule" "all_egress" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
+// ec2 instance
+
 resource "aws_instance" "prem_analytics_server" {
   ami = data.aws_ami.ubuntu.id
 
@@ -95,6 +97,8 @@ resource "aws_instance" "prem_analytics_server" {
   associate_public_ip_address = true
 
   key_name = aws_key_pair.prem_analytics.key_name
+
+  iam_instance_profile = aws_iam_instance_profile.prem_analytics_instance_profile.name
 
   root_block_device {
     volume_size           = 20
@@ -188,4 +192,137 @@ resource "aws_security_group_rule" "rds_egress" {
   protocol          = "-1"
   security_group_id = aws_security_group.prem_analytics_rds_sg.id
   cidr_blocks       = ["0.0.0.0/0"]
+}
+
+// iam role
+
+resource "aws_iam_role" "prem_analytics_ec2_role" {
+  name = "prem_analytics_ec2_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+
+  tags = {
+    Name        = "prem_analytics_ec2-role"
+    Project     = "Prem_Analytics"
+    Environment = "dev"
+    Owner       = "Mantavya"
+  }
+}
+
+resource "aws_iam_role_policy" "prem_analytics_secrets_policy" {
+  name = "prem-analytics-secrets-read-policy"
+  role = aws_iam_role.prem_analytics_ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Effect   = "Allow"
+        Resource = aws_secretsmanager_secret.prem_analytics_db.arn
+      },
+    ]
+  })
+
+}
+
+resource "aws_iam_instance_profile" "prem_analytics_instance_profile" {
+  name = "prem_analytics_instance_profile"
+  role = aws_iam_role.prem_analytics_ec2_role.name
+}
+
+// secrets - decided against using but keeping for reference purposes
+
+resource "aws_secretsmanager_secret" "prem_analytics_db" {
+  name = "prem-analytics/database"
+
+  tags = {
+    Project     = "Prem_Analytics"
+    Environment = "dev"
+    Owner       = "Mantavya"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "prem_analytics_db_version" {
+  secret_id = aws_secretsmanager_secret.prem_analytics_db.id
+
+  secret_string = jsonencode({
+    API_KEY     = var.football_api_key
+    BASE_URL    = "https://api.football-data.org/v4"
+    DB_NAME     = "prem_analytics"
+    DB_USER     = "premadmin"
+    DB_PASSWORD = var.db_password
+    DB_HOST     = aws_db_instance.prem-analytics-db.address
+    DB_PORT     = 5432
+  })
+}
+
+// monitoring - alarms
+
+resource "aws_sns_topic" "prem_analytics_alerts" {
+  name = "prem-analytics-alerts"
+}
+
+resource "aws_cloudwatch_metric_alarm" "ec2_high_cpu" {
+  alarm_name          = "prem-analytics-ec2-high-cpu"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+
+  dimensions = {
+    InstanceId = aws_instance.prem_analytics_server.id
+  }
+
+  alarm_actions = [aws_sns_topic.prem_analytics_alerts.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "rds-high-cpu" {
+  alarm_name          = "prem-analytics-rds-high-cpu"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.prem-analytics-db.id
+  }
+
+  alarm_actions = [aws_sns_topic.prem_analytics_alerts.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "rds_low_storage" {
+  alarm_name          = "prem-analytics-rds-low-storage"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "FreeStorageSpace"
+  namespace           = "AWS/RDS"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 5000000000
+
+  dimensions = {
+    DBInstanceIdentifier = aws_db_instance.prem-analytics-db.id
+  }
+
+  alarm_actions = [aws_sns_topic.prem_analytics_alerts.arn]
 }
