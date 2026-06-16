@@ -360,25 +360,3 @@ Project1/
 ├── docker-compose.yml
 ├── aws-compose.yaml
 └── requirements.txt
-```
-
----
-
-## What This Project Demonstrates
-
-This project demonstrates the ability to design, provision, deploy, secure, monitor, and operate a production-style cloud application from scratch.
-
-Key concepts explored include:
-
-* AWS Infrastructure Design
-* Infrastructure as Code
-* Network Security
-* Docker Containerization
-* Data Engineering
-* PostgreSQL Database Design
-* CI/CD Automation
-* Monitoring & Observability
-* Backend API Development
-* Cloud Architecture Best Practices
-
-The objective was not simply to build an application, but to gain practical experience with the tools and patterns commonly used by Cloud Engineers, DevOps Engineers, Site Reliability Engineers, and Infrastructure Engineers in production environments.
